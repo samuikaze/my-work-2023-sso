@@ -8,9 +8,9 @@ use Laravel\Lumen\Routing\Controller as BaseController;
 /**
  * @OA\OpenApi(
  *   @OA\Info(
- *     title="專案名稱",
+ *     title="Single Sign On API",
  *     version="1.0.0",
- *     description="<專案名稱>的 API 文件"
+ *     description="統一登入入口的 API 文件"
  *   )
  * )
  * @OA\SecurityScheme(
