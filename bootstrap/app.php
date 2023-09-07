@@ -84,9 +84,11 @@ $app->middleware([
     App\Http\Middleware\HandleCorsHeaders::class,
 ]);
 
-// $app->routeMiddleware([
-//     'auth' => App\Http\Middleware\Authenticate::class,
-// ]);
+$app->routeMiddleware([
+    'auth_api' => \App\Http\Middleware\VerifyAccessToken::class,
+    'external_logging' => \App\Http\Middleware\LoggingExternalActions::class,
+    'internal_logging' => \App\Http\Middleware\LoggingInternalActions::class,
+]);
 
 /*
 |--------------------------------------------------------------------------
