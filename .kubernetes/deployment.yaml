@@ -2,23 +2,23 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: <APPLICATION_NAME>
+  name: single-sign-on-backend
   labels:
-    app: <APPLICATION_NAME>
-  namespace: <NAMESPACE>
+    app: single-sign-on-backend
+  namespace: smkz-for-work
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: <APPLICATION_NAME>
+      app: single-sign-on-backend
   template:
     metadata:
       labels:
-        app: <APPLICATION_NAME>
+        app: single-sign-on-backend
     spec:
       containers:
-        - name: <APPLICATION_NAME>
-          image: <REGISTRY_URL>/<IMAGE_NAME>:latest
+        - name: single-sign-on-backend
+          image: $secrets.REGISTRY_URL/single-sign-on-backend:latest
           resources:
             requests:
               memory: 512Mi
@@ -29,18 +29,84 @@ spec:
           ports:
             - containerPort: 80
               protocol: TCP
+          env:
+            - name: DB_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: single-sign-on-secrets
+                  key: database.host
+            - name: DB_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: single-sign-on-configs
+                  key: database.port
+            - name: DB_DATABASE
+              valueFrom:
+                configMapKeyRef:
+                  name: single-sign-on-configs
+                  key: database.name
+            - name: DB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: single-sign-on-secrets
+                  key: database.username
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: single-sign-on-secrets
+                  key: database.password
+            - name: JWT_ISSUER
+              valueFrom:
+                secretKeyRef:
+                  name: single-sign-on-secrets
+                  key: jwt.issuer
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: single-sign-on-secrets
+                  key: jwt.secret
+            - name: JWT_SECRET_ALGORITHM
+              valueFrom:
+                secretKeyRef:
+                  name: single-sign-on-secrets
+                  key: jwt.secret.algorithm
+            - name: JWT_SECRET_JWT_ALGORITHM
+              valueFrom:
+                secretKeyRef:
+                  name: single-sign-on-secrets
+                  key: jwt.secret.jwt.algorithm
+            - name: AUTHENTICATE_VALID_DURATION
+              valueFrom:
+                configMapKeyRef:
+                  name: single-sign-on-configs
+                  key: auth.valid
+            - name: REFRESH_TOKEN_VALID_DURATION
+              valueFrom:
+                configMapKeyRef:
+                  name: single-sign-on-configs
+                  key: refresh.valid
+            - name: RESET_PASSWORD_THROUGH_MAIL
+              valueFrom:
+                configMapKeyRef:
+                  name: single-sign-on-configs
+                  key: password.reset.byemail
+            - name: MAIL_MAILER
+              valueFrom:
+                configMapKeyRef:
+                  name: single-sign-on-configs
+                  key: mail.mailer
 
 ---
 # service.yaml
 apiVersion: v1
 kind: Service
 metadata:
-  name: <APPLICATION_NAME>
-  namespace: <NAMESPACE>
+  name: single-sign-on-backend
+  namespace: smkz-for-work
 spec:
   type: ClusterIP
   selector:
-    app: <APPLICATION_NAME>
+    app: single-sign-on-backend
   ports:
     - protocol: TCP
       port: 80

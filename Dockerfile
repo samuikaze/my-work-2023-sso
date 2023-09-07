@@ -20,8 +20,8 @@ RUN apk update \
         libwebp-dev \
         freetype-dev \
         # 郵件功能
-        # imap-dev \
-        # krb5-dev \
+        imap-dev \
+        krb5-dev \
         # SOAP 相關功能
         # libressl-dev \
         # libxml2-dev \
@@ -35,7 +35,7 @@ RUN apk update \
         pdo_mysql \
         mysqli \
         # 郵件功能
-        # imap \
+        imap \
         # SOAP 相關功能
         # soap \
         # ZIP 功能
