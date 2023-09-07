@@ -1,0 +1,7 @@
+/.git
+/.examples
+/.github
+/.kubernetes
+/tests
+/vendor
+phpunit.xml
