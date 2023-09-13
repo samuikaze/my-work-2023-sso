@@ -244,7 +244,13 @@ class AuthenticateService
 
         $access_token_payloads = [
             'userId' => $user->id,
-            'roles' => $roles->pluck('name'),
+            'roles' => $roles->map(function ($item) {
+                return [
+                    'id' => $item->id,
+                    'name' => $item->name,
+                    'description' => $item->description,
+                ];
+            }),
             'scope' => $role_abilities->pluck('name'),
             'account' => $user->account,
             'username' => $user_detail->username,
