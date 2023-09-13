@@ -322,8 +322,20 @@ class AuthenticateService
 
         if ($need_data) {
             $user_detail = $this->user_detail_repository->getUserDetailByUserId($user->id);
-            $roles = $this->role_repository->getRoleByUserId($user->id);
-            $abilities = $this->ability_repository->getAbilitiesByRoleIds($roles->pluck('id'));
+            $roles = $this->role_repository->getRoleByUserId($user->id)->map(function ($item) {
+                return [
+                    'id' => $item->id,
+                    'name' => $item->name,
+                    'description' => $item->description,
+                ];
+            });
+            $abilities = $this->ability_repository->getAbilitiesByRoleIds($roles->pluck('id'))->map(function ($item) {
+                return [
+                    'id' => $item->id,
+                    'name' => $item->name,
+                    'description' => $item->description,
+                ];
+            });
 
             $response = [
                 'id' => $user->id,
@@ -331,8 +343,8 @@ class AuthenticateService
                 'email' => $user->email,
                 'username' => $user_detail->username,
                 'phone' => $user_detail->phone,
-                'roles' => $roles->only('id', 'name', 'description'),
-                'abilities' => $abilities->only('id', 'name', 'description'),
+                'roles' => $roles,
+                'abilities' => $abilities,
                 'registeredAt' => $user->created_at,
                 'updatedAt' => $user->updated_at,
             ];
