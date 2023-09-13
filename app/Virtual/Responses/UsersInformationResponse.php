@@ -4,8 +4,8 @@ namespace App\Virtual\Responses;
 
 /**
  * @OA\Schema(
- *   title="以多筆 ID 取得帳號資訊單筆資料結構",
- *   description="以多筆 ID 取得帳號資訊單筆資料結構",
+ *   title="以多筆 PK 取得使用者帳號資訊單筆資料結構",
+ *   description="以多筆 PK 取得使用者帳號資訊單筆資料結構",
  *   type="object"
  * )
  */
@@ -13,7 +13,7 @@ class UsersInformationResponse
 {
     /**
      * @OA\Property(
-     *   description="帳號 ID",
+     *   description="使用者帳號 PK",
      *   example=1
      * )
      *
@@ -23,11 +23,19 @@ class UsersInformationResponse
 
     /**
      * @OA\Property(
-     *   description="帳號名稱",
+     *   description="帳號",
+     *   example="account"
+     * )
+     */
+    public $account;
+
+    /**
+     * @OA\Property(
+     *   description="使用者名稱",
      *   example="user"
      * )
      *
      * @var string
      */
-    public $name;
+    public $username;
 }
