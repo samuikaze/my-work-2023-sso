@@ -11,6 +11,7 @@ use App\Repositories\RoleRepository;
 use App\Repositories\TokenRepository;
 use App\Repositories\UserDetailRepository;
 use App\Repositories\UserRepository;
+use App\Repositories\UserRoleRepository;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Support\Facades\Hash;
@@ -33,6 +34,13 @@ class AuthenticateService
     protected $user_detail_repository;
 
     /**
+     * UserRoleRepository
+     *
+     * @var \App\Repositories\UserRoleRepository
+     */
+    protected $user_role_repository;
+
+    /**
      * TokenRepository
      *
      * @var \App\Repositories\TokenRepository
@@ -47,6 +55,8 @@ class AuthenticateService
     protected $role_repository;
 
     /**
+     * AbilityRepository
+     *
      * @var \App\Repositories\AbilityRepository
      */
     protected $ability_repository;
@@ -55,6 +65,7 @@ class AuthenticateService
      *
      * @param \App\Repositories\UserRepository $user_repository
      * @param \App\Repositories\UserDetailRepository $user_detail_repository
+     * @param \App\Repositories\UserRoleRepository $user_role_repository
      * @param \App\Repositories\TokenRepository $token_repository
      * @param \App\Repositories\AbilityRepository $ability_repository
      * @return void
@@ -62,12 +73,14 @@ class AuthenticateService
     public function __construct(
         UserRepository $user_repository,
         UserDetailRepository $user_detail_repository,
+        UserRoleRepository $user_role_repository,
         TokenRepository $token_repository,
         RoleRepository $role_repository,
         AbilityRepository $ability_repository
     ) {
         $this->user_repository = $user_repository;
         $this->user_detail_repository = $user_detail_repository;
+        $this->user_role_repository = $user_role_repository;
         $this->token_repository = $token_repository;
         $this->role_repository = $role_repository;
         $this->ability_repository = $ability_repository;
@@ -96,6 +109,7 @@ class AuthenticateService
                 'account' => $account,
                 'password' => Hash::make($password),
                 'email' => $email,
+                'status' => 1
             ];
 
             $user = $this->user_repository->create($user);
@@ -103,10 +117,16 @@ class AuthenticateService
             $user_detail = [
                 'user_id' => $user->id,
                 'username' => $username,
-                'phone' => null,
             ];
 
             $this->user_detail_repository->create($user_detail);
+
+            $user_role = [
+                'user_id' => $user->id,
+                'role_id' => 1
+            ];
+
+            $this->user_role_repository->create($user_role);
         });
     }
 

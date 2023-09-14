@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Repositories\ActionLogRepository;
+use Illuminate\Database\QueryException;
 
 class ActionLogService
 {
@@ -45,14 +46,26 @@ class ActionLogService
         int $service_id = null,
         string $ip = null
     ): void {
-        $this->action_log_repository->create([
-            'uri' => $uri,
-            'method' => $method,
-            'user_id' => $user_id,
-            'service_id' => $service_id,
-            'access_ip' => $ip,
-            'code' => $status,
-            'request_payloads' => $request_payloads,
-        ]);
+        try {
+            $this->action_log_repository->create([
+                'uri' => $uri,
+                'method' => $method,
+                'user_id' => $user_id,
+                'service_id' => $service_id,
+                'access_ip' => $ip,
+                'code' => $status,
+                'request_payloads' => $request_payloads,
+            ]);
+        } catch (QueryException $e) {
+            $this->action_log_repository->create([
+                'uri' => $uri,
+                'method' => $method,
+                'user_id' => null,
+                'service_id' => $service_id,
+                'access_ip' => $ip,
+                'code' => $status,
+                'request_payloads' => $request_payloads,
+            ]);
+        }
     }
 }

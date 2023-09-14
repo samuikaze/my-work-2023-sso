@@ -61,9 +61,7 @@ class LoggingExternalActions
             $response = $next($request);
 
             if (! is_null($response)) {
-                [
-                    'status' => $status,
-                ] = $response->getOriginalContent();
+                $status = $response->getStatusCode();
             } else {
                 $status = 0;
             }
