@@ -572,4 +572,64 @@ class AuthenticateController extends Controller
 
         return $this->response(null, $info);
     }
+
+    /**
+     * 更新使用者資料
+     *
+     * @OA\Patch(
+     *   path="/api/v1/user",
+     *   summary="更新使用者資料",
+     *   tags={"Authentication v1"},
+     *   security={{ "apiAuth": {} }},
+     *   @OA\RequestBody(
+     *     required=true,
+     *     @OA\JsonContent(
+     *       ref="#/components/schemas/UpdateUserDataRequest"
+     *     )
+     *   ),
+     *   @OA\Response(
+     *     response="200",
+     *     description="更新成功",
+     *     @OA\JsonContent(
+     *       allOf={
+     *         @OA\Schema(ref="#/components/schemas/BaseResponse"),
+     *         @OA\Schema(
+     *           @OA\Property(
+     *             property="data",
+     *             ref="#/components/schemas/UpdateUserDataResponse"
+     *           )
+     *         )
+     *       }
+     *     )
+     *   ),
+     *   @OA\Response(
+     *     response="401",
+     *     description="驗證失敗"
+     *   ),
+     * )
+     */
+    public function updateUserData(Request $request): JsonResponse
+    {
+        $validator = Validator::make($request->all(), [
+            'username' => ['required', 'string'],
+            'password' => ['nullable', 'string', 'confirmed'],
+            'email' => ['required', 'string', 'email'],
+        ]);
+
+        if ($validator->fails()) {
+            return $this->response(
+                error: '給定的資料格式不正確',
+                status: self::HTTP_BAD_REQUEST
+            );
+        }
+
+        $new_user = $this->security_service->updateUserData(
+            $request->input('authorization.id'),
+            $request->input('username'),
+            $request->input('email'),
+            $request->input('password')
+        );
+
+        return $this->response(data: $new_user);
+    }
 }
