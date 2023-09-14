@@ -347,6 +347,7 @@ class AuthenticateService
                 'id' => $user->id,
                 'account' => $user->account,
                 'email' => $user->email,
+                'emailVerifiedAt' => $user->email_verified_at,
                 'username' => $user_detail->username,
                 'phone' => $user_detail->phone,
                 'roles' => $roles,

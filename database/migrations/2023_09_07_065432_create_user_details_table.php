@@ -18,8 +18,8 @@ return new class extends Migration
 
             $table->id();
             $table->bigInteger('user_id')->unsigned()->comment('使用者帳號 PK');
+            $table->string('virtual_avator', 1024)->nullable()->comment('虛擬形象');
             $table->string('username', 128)->comment('使用者名稱');
-            $table->string('phone', 64)->nullable()->comment('連絡電話');
             $table->dateTime('created_at')->nullable()->comment('建立時間');
             $table->dateTime('updated_at')->nullable()->comment('最後更新時間');
 
