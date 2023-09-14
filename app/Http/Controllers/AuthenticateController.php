@@ -576,8 +576,8 @@ class AuthenticateController extends Controller
     /**
      * 更新使用者資料
      *
-     * @OA\Patch(
-     *   path="/api/v1/user",
+     * @OA\Post(
+     *   path="/api/v1/user/update",
      *   summary="更新使用者資料",
      *   tags={"Authentication v1"},
      *   security={{ "apiAuth": {} }},
