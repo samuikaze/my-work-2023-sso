@@ -29,7 +29,7 @@ $router->group(['prefix' => 'api'], function () use ($router) {
                 // 驗證登入狀態，並取得帳號資訊
                 $router->get('/user', 'AuthenticateController@authorization');
                 // 更新使用者資料
-                $router->patch('/user', 'AuthenticateController@updateUserData');
+                $router->patch('/user/update', 'AuthenticateController@updateUserData');
                 // 以重整權杖重新取得存取權杖
                 $router->post('/user/token/refresh', 'AuthenticateController@refreshToken');
             });
