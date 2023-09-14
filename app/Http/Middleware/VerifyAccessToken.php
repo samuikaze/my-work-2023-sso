@@ -42,7 +42,8 @@ class VerifyAccessToken
         $bearer_token = $request->bearerToken();
 
         try {
-            $this->authenticate_service->verifyJWToken($bearer_token);
+            $user = $this->authenticate_service->verifyJWToken($bearer_token, true);
+            $request->merge(['authorization' => $user]);
         } catch (Exception $e) {
             report($e);
 

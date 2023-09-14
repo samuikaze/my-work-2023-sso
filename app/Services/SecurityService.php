@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Exceptions\EntityNotFoundException;
 use App\Mail\ResetPassword;
 use App\Repositories\ForgetPasswordRequestRepository;
+use App\Repositories\UserDetailRepository;
 use App\Repositories\UserRepository;
 use Carbon\Carbon;
 use Illuminate\Contracts\Encryption\DecryptException;
@@ -29,6 +30,13 @@ class SecurityService
     protected $user_repository;
 
     /**
+     * UserDetailRepository
+     *
+     * @var \App\Repositories\UserDetailRepository
+     */
+    protected $user_detail_repository;
+
+    /**
      * ForgetPasswordRequestRepository
      *
      * @var \App\Repositories\ForgetPasswordRequestRepository
@@ -37,9 +45,11 @@ class SecurityService
 
     public function __construct(
         UserRepository $user_repository,
+        UserDetailRepository $user_detail_repository,
         ForgetPasswordRequestRepository $forget_password_request_repository
     ) {
         $this->user_repository = $user_repository;
+        $this->user_detail_repository = $user_detail_repository;
         $this->forget_password_request_repository = $forget_password_request_repository;
 
         $this->reset_password_through_email = config('singlesignon.reset_password_thru_email', true);
@@ -145,5 +155,45 @@ class SecurityService
         }
 
         return $user->only('id', 'account', 'email');
+    }
+
+    /**
+     * 以使用者帳號 PK 更新資料
+     *
+     * @param int $user_id 使用者帳號 PK
+     * @param string $username 使用者名稱
+     * @param string $email 電子郵件信箱
+     * @param string|null $password 密碼
+     * @return void
+     */
+    public function updateUserData(int $user_id, string $username, string $email, string $password = null)
+    {
+        $user = $this->user_repository->find($user_id);
+        $user_array = [
+            'email' => $email,
+        ];
+        if ($user->email != $email) {
+            $user_array['email_verified_at'] = null;
+        }
+
+        if (! is_null($password)) {
+            $user_array['password'] = Hash::make($password);
+        }
+
+        $user = $this->user_repository->safeUpdate($user_id, $user_array);
+
+        $user_detail = $this->user_detail_repository->getUserDetailByUserId($user_id);
+        $user_detail = $this->user_detail_repository->safeUpdate($user_detail->id, [
+            'username' => $username,
+        ]);
+
+        return [
+            'id' => $user->id,
+            'userId' => $user->id,
+            'account' => $user->account,
+            'username' => $user_detail->username,
+            'email' => $user->email,
+            'emailVerifiedAt' => $user->email_verified_at,
+        ];
     }
 }

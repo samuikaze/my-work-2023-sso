@@ -100,6 +100,18 @@ class AuthorizeUserResponse
     public $abilities;
 
     /**
+     * 電子郵件驗證時間
+     *
+     * @var string
+     *
+     * @OA\Property(
+     *   description="電子郵件驗證時間",
+     *   example="2023-09-07T00:00:00.000Z"
+     * )
+     */
+    public $emailVerifiedAt;
+
+    /**
      * 帳號註冊時間
      *
      * @var string
