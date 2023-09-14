@@ -9,23 +9,11 @@ namespace App\Virtual\Requests;
  *   title="驗證登入狀態並取得帳號資訊的回應酬載",
  *   description="驗證登入狀態並取得帳號資訊的回應酬載",
  *   type="object",
- *   required={"username", "email", "_method"}
+ *   required={"username", "email"}
  * )
  */
 class UpdateUserDataRequest
 {
-    /**
-     * 呼叫 HTTP 方法
-     *
-     * @var string
-     *
-     * @OA\Property(
-     *   description="呼叫 HTTP 方法",
-     *   example="patch"
-     * )
-     */
-    protected $_method;
-
     /**
      * 暱稱
      *
