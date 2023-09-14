@@ -58,7 +58,7 @@ abstract class BaseRepository
      * @param int $id
      * @return \Illuminate\Database\Eloquent\Model
      */
-    public function find(int $id): Model
+    public function find(int $id): Model | null
     {
         return $this->model->find($id);
     }
