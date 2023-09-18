@@ -614,6 +614,7 @@ class AuthenticateController extends Controller
             'username' => ['required', 'string'],
             'password' => ['nullable', 'string', 'confirmed'],
             'email' => ['required', 'string', 'email'],
+            'virtualAvator' => ['nullable', 'string'],
         ]);
 
         if ($validator->fails()) {
@@ -627,6 +628,7 @@ class AuthenticateController extends Controller
             $request->input('authorization.id'),
             $request->input('username'),
             $request->input('email'),
+            $request->input('virtualAvator'),
             $request->input('password')
         );
 

@@ -17,8 +17,8 @@ class UserDetail extends Model
      */
     protected $fillable = [
         'user_id',
+        'virtual_avator',
         'username',
-        'phone',
     ];
 
     /**

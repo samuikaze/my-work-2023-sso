@@ -163,10 +163,11 @@ class SecurityService
      * @param int $user_id 使用者帳號 PK
      * @param string $username 使用者名稱
      * @param string $email 電子郵件信箱
+     * @param string|null $virtual_avator 虛擬形象圖檔路徑
      * @param string|null $password 密碼
      * @return void
      */
-    public function updateUserData(int $user_id, string $username, string $email, string $password = null)
+    public function updateUserData(int $user_id, string $username, string $email, string $virtual_avator = null, string $password = null)
     {
         $user = $this->user_repository->find($user_id);
         $user_array = [
@@ -185,6 +186,7 @@ class SecurityService
         $user_detail = $this->user_detail_repository->getUserDetailByUserId($user_id);
         $user_detail = $this->user_detail_repository->safeUpdate($user_detail->id, [
             'username' => $username,
+            'virtual_avator' => $virtual_avator,
         ]);
 
         return [
@@ -192,6 +194,7 @@ class SecurityService
             'userId' => $user->id,
             'account' => $user->account,
             'username' => $user_detail->username,
+            'virtualAvator' => $user_detail->virtual_avator,
             'email' => $user->email,
             'emailVerifiedAt' => $user->email_verified_at,
         ];
