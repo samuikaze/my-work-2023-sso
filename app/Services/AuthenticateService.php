@@ -369,6 +369,7 @@ class AuthenticateService
                 'email' => $user->email,
                 'emailVerifiedAt' => $user->email_verified_at,
                 'username' => $user_detail->username,
+                'virtualAvator' => $user_detail->virtual_avator,
                 'phone' => $user_detail->phone,
                 'roles' => $roles,
                 'abilities' => $abilities,

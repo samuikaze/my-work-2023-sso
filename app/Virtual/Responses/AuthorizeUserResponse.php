@@ -62,16 +62,16 @@ class AuthorizeUserResponse
     public $username;
 
     /**
-     * 連絡電話
+     * 虛擬形象
      *
      * @var string
      *
      * @OA\Property(
-     *   description="連絡電話",
-     *   example="0987654321"
+     *   description="虛擬形象",
+     *   example="aaa/test.jpg"
      * )
      */
-    public $phone;
+    public $virtualAvator;
 
     /**
      * 角色

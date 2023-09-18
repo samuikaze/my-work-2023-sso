@@ -39,6 +39,18 @@ class UpdateUserDataRequest
     public $email;
 
     /**
+     * 虛擬形象圖檔路徑
+     *
+     * @var string
+     *
+     * @OA\Property(
+     *   description="虛擬形象圖檔路徑",
+     *   example="aaa/test.jpg"
+     * )
+     */
+    public $virtualAvator;
+
+    /**
      * 密碼
      *
      * @var string
