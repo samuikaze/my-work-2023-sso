@@ -13,4 +13,9 @@ enum TokenType: int
      * 重整權杖
      */
     case REFRESH_TOKEN = 2;
+
+    /**
+     * 服務跳轉權杖
+     */
+    case SERVICE_ACCESS_TOKEN = 3;
 }

@@ -3,11 +3,14 @@
 namespace App\Services;
 
 use App\Commons\Utils;
+use App\Enums\Ability;
 use App\Enums\TokenType;
 use App\Exceptions\EntityNotFoundException;
 use App\Models\User;
 use App\Repositories\AbilityRepository;
 use App\Repositories\RoleRepository;
+use App\Repositories\ServiceAccessTokenRepository;
+use App\Repositories\ServiceRepository;
 use App\Repositories\TokenRepository;
 use App\Repositories\UserDetailRepository;
 use App\Repositories\UserRepository;
@@ -62,12 +65,28 @@ class AuthenticateService
     protected $ability_repository;
 
     /**
+     * ServiceRepository
+     *
+     * @var \App\Repositories\ServiceRepository
+     */
+    protected $service_repository;
+
+    /**
+     * ServiceAccessToken
+     *
+     * @var \App\Repositories\ServiceAccessTokenRepository
+     */
+    protected $service_access_token_repository;
+
+    /**
      *
      * @param \App\Repositories\UserRepository $user_repository
      * @param \App\Repositories\UserDetailRepository $user_detail_repository
      * @param \App\Repositories\UserRoleRepository $user_role_repository
      * @param \App\Repositories\TokenRepository $token_repository
      * @param \App\Repositories\AbilityRepository $ability_repository
+     * @param \App\Repositories\ServiceRepository $service_repository
+     * @param \App\Repositories\ServiceAccessTokenRepository $service_access_token_repository
      * @return void
      */
     public function __construct(
@@ -76,7 +95,9 @@ class AuthenticateService
         UserRoleRepository $user_role_repository,
         TokenRepository $token_repository,
         RoleRepository $role_repository,
-        AbilityRepository $ability_repository
+        AbilityRepository $ability_repository,
+        ServiceRepository $service_repository,
+        ServiceAccessTokenRepository $service_access_token_repository
     ) {
         $this->user_repository = $user_repository;
         $this->user_detail_repository = $user_detail_repository;
@@ -84,6 +105,8 @@ class AuthenticateService
         $this->token_repository = $token_repository;
         $this->role_repository = $role_repository;
         $this->ability_repository = $ability_repository;
+        $this->service_repository = $service_repository;
+        $this->service_access_token_repository = $service_access_token_repository;
     }
 
     /**
@@ -123,7 +146,7 @@ class AuthenticateService
 
             $user_role = [
                 'user_id' => $user->id,
-                'role_id' => 1
+                'role_id' => 2
             ];
 
             $this->user_role_repository->create($user_role);
@@ -240,6 +263,86 @@ class AuthenticateService
         }
 
         return $this->generateToken($user);
+    }
+
+    /**
+     * 產生系統跳轉存取權杖
+     *
+     * @param int $user_id 使用者帳號 PK
+     * @param string $system 跳轉目標系統名稱
+     * @param string $access_token 存取權杖
+     * @param string $refresh_token 重整權杖
+     * @return array<string, string>
+     */
+    public function generateSystemAccessToken(int $user_id, string $system, string $access_token, string $refresh_token): array
+    {
+        $roles = $this->user_role_repository->getRolesByUserId($user_id)->pluck('id');
+        $abilities = $this->ability_repository->getAbilityIdsByRoleIds($roles);
+        $conditions = $abilities
+            ->filter(function ($ability) {
+                return (
+                    $ability->id === Ability::BACKSTAGE->value ||
+                    $ability->parent_ability === Ability::BACKSTAGE->value
+                );
+            })
+            ->count();
+        if ($conditions === 0) {
+            throw new InvalidArgumentException('驗證失敗');
+        }
+
+        $this->service_repository->getServiceByString($system);
+
+        $generate_token = Uuid::uuid4()->toString();
+
+        $service_access_token_valid = (int) env('SERVICE_ACCESS_TOKEN_VALID_DURATION', 60);
+        $service_access_token = [
+            'token' => $generate_token,
+            'access_token' => $access_token,
+            'refresh_token' => $refresh_token,
+            'expired_at' => Carbon::now()->addMinutes($service_access_token_valid),
+        ];
+        $this->service_access_token_repository->create($service_access_token);
+
+        $token_payloads = [
+            'token' => $generate_token,
+            'tokenType' => TokenType::SERVICE_ACCESS_TOKEN->value,
+        ];
+        $token = $this->generateJWTToken(
+            $token_payloads,
+            (string) random_int(1000000000, 9999999999),
+            $generate_token,
+        );
+
+        return [
+            'token' => $token,
+            'tokenType' => 'Bearer'
+        ];
+    }
+
+    /**
+     * 依據傳入的服務跳轉權杖取得使用者帳號的存取權杖與重整權杖
+     *
+     * @param string $bearer_token 服務跳轉權杖
+     * @return array<string, string>
+     *
+     * @throws \App\Exceptions\EntityNotFoundException
+     */
+    public function getSignInFromSystemAccessToken(string $bearer_token): array
+    {
+        [
+            'token' => $uuid
+        ] = $this->decodeJWTToken($bearer_token);
+
+        $service_access_token = $this->service_access_token_repository->getTokenByUuid($uuid);
+
+        $this->service_access_token_repository->delete($service_access_token->id);
+
+        $this->service_access_token_repository->removeExpiredToken();
+
+        return [
+            'access_token' => $service_access_token->access_token,
+            'refresh_token' => $service_access_token->refresh_token,
+        ];
     }
 
     /**
@@ -453,6 +556,9 @@ class AuthenticateService
                 break;
             case TokenType::REFRESH_TOKEN->value:
                 $valid_duration = (int) env('REFRESH_TOKEN_VALID_DURATION', 60 * 60 * 24);
+                break;
+            case TokenType::SERVICE_ACCESS_TOKEN->value:
+                $valid_duration = (int) env('SERVICE_ACCESS_TOKEN_VALID_DURATION', 60);
                 break;
         }
         $issuer = env('JWT_ISSUER');
