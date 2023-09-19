@@ -32,7 +32,11 @@ $router->group(['prefix' => 'api'], function () use ($router) {
                 $router->patch('/user/update', 'AuthenticateController@updateUserData');
                 // 以重整權杖重新取得存取權杖
                 $router->post('/user/token/refresh', 'AuthenticateController@refreshToken');
+                // 產生系統跳轉用存取權杖
+                $router->post('/system/token', 'AuthenticateController@generateSystemAccessToken');
             });
+            // 依據系統跳轉權杖取得存取權杖與重整權杖
+            $router->get('/system/token', 'AuthenticateController@getSignInFromSystemAccessToken');
             // 忘記密碼
             $router->post('/forget/password', 'AuthenticateController@forgetPassword');
             // 取得重設密碼權杖資訊
@@ -43,11 +47,4 @@ $router->group(['prefix' => 'api'], function () use ($router) {
             $router->post('/users', 'InformationController@getUsersInformation');
         });
     });
-
-    // 內部 API
-    /* $router->group(['middleware' => ['internal_logging']], function () use ($router) {
-        $router->group(['prefix' => 'v1/internal'], function () use ($router) {
-            $router->post('/user', 'AuthenticateController@internalSystemAuthorization');
-        });
-    }); */
 });

@@ -634,4 +634,143 @@ class AuthenticateController extends Controller
 
         return $this->response(data: $new_user);
     }
+
+    /**
+     * 產生系統跳轉用存取權杖
+     *
+     * @param \Illuminate\Http\Request $request
+     * @param \Illuminate\Http\JsonResponse
+     *
+     * @OA\Post(
+     *   path="/api/v1/system/token",
+     *   summary="產生系統跳轉用存取權杖",
+     *   tags={"Authentication v1"},
+     *   security={{ "apiAuth": {} }},
+     *   @OA\RequestBody(
+     *     required=true,
+     *     @OA\JsonContent(
+     *       ref="#/components/schemas/GenerateSystemAccessTokenRequest"
+     *     )
+     *   ),
+     *   @OA\Response(
+     *     response="200",
+     *     description="更新產生系統跳轉用存取權杖",
+     *     @OA\JsonContent(
+     *       allOf={
+     *         @OA\Schema(ref="#/components/schemas/BaseResponse"),
+     *         @OA\Schema(
+     *           @OA\Property(
+     *             property="data",
+     *             ref="#/components/schemas/Token"
+     *           )
+     *         )
+     *       }
+     *     )
+     *   ),
+     *   @OA\Response(
+     *     response="401",
+     *     description="驗證失敗"
+     *   ),
+     * )
+     */
+    public function generateSystemAccessToken(Request $request): JsonResponse
+    {
+        $validator = Validator::make($request->all(), [
+            'system' => ['required', 'string'],
+            'accessToken' => ['required', 'string'],
+            'refreshToken' => ['required', 'string'],
+        ]);
+        if ($validator->fails()) {
+            return $this->response(
+                error: '給定的資料格式不正確',
+                status: self::HTTP_BAD_REQUEST
+            );
+        }
+
+        try {
+            $token = $this->authenticate_service->generateSystemAccessToken(
+                $request->input('authorization.id'),
+                $request->input('system'),
+                $request->input('accessToken'),
+                $request->input('refreshToken')
+            );
+        } catch (InvalidArgumentException $e) {
+            return $this->response(
+                error: $e->getMessage(),
+                status: self::HTTP_UNAUTHORIZED
+            );
+        }
+
+        return $this->response(data: $token);
+    }
+
+    /**
+     * 依據系統跳轉權杖取得存取權杖與重整權杖
+     *
+     * @param \Illuminate\Http\Request $request
+     * @param \Illuminate\Http\JsonResponse
+     *
+     * @OA\Get(
+     *   path="/api/v1/system/token",
+     *   summary="依據系統跳轉權杖取得存取權杖與重整權杖",
+     *   tags={"Authentication v1"},
+     *   security={{ "apiAuth": {} }},
+     *   @OA\Response(
+     *     response="200",
+     *     description="更新取得存取權杖與重整權杖",
+     *     @OA\JsonContent(
+     *       allOf={
+     *         @OA\Schema(ref="#/components/schemas/BaseResponse"),
+     *         @OA\Schema(
+     *           @OA\Property(
+     *             property="data",
+     *             ref="#/components/schemas/SignInResponse"
+     *           )
+     *         )
+     *       }
+     *     )
+     *   ),
+     *   @OA\Response(
+     *     response="401",
+     *     description="驗證失敗"
+     *   ),
+     * )
+     */
+    public function getSignInFromSystemAccessToken(Request $request): JsonResponse
+    {
+        $service_access_token = $request->bearerToken();
+        if (is_null($service_access_token)) {
+            return $this->response(
+                error: '驗證失敗',
+                status: self::HTTP_UNAUTHORIZED
+            );
+        }
+
+        try {
+            [
+                'access_token' => $access_token,
+                'refresh_token' => $refresh_token,
+            ] = $this->authenticate_service->getSignInFromSystemAccessToken(
+                $service_access_token
+            );
+        } catch (InvalidArgumentException $e) {
+            return $this->response(
+                error: $e->getMessage(),
+                status: self::HTTP_UNAUTHORIZED
+            );
+        }
+
+        $response = [
+            'accessToken' => [
+                'type' => 'Bearer',
+                'token' => $access_token,
+            ],
+            'refreshToken' => [
+                'type' => 'Bearer',
+                'token' => $refresh_token,
+            ],
+        ];
+
+        return $this->response(data: $response);
+    }
 }

@@ -106,11 +106,12 @@ class LoggingExternalActions
         }
 
         try {
-            [
-                'userId' => $user_id,
-            ] = $this->authenticate_service->decodeJWTToken($access_token);
+            $decoded = $this->authenticate_service->decodeJWTToken($access_token);
+            if (array_key_exists('userId', $decoded)) {
+                return $decoded['userId'];
+            }
 
-            return $user_id;
+            return null;
         } catch (InvalidArgumentException $e) {
             return null;
         }
