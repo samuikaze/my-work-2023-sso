@@ -186,7 +186,7 @@ class SecurityService
         $user_detail = $this->user_detail_repository->getUserDetailByUserId($user_id);
         $user_detail = $this->user_detail_repository->safeUpdate($user_detail->id, [
             'username' => $username,
-            'virtual_avator' => $virtual_avator,
+            'virtual_avator' => is_null($virtual_avator) ? $user_detail->virtual_avator : $virtual_avator,
         ]);
 
         return [
